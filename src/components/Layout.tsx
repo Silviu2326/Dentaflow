@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../hooks/usePermissions';
 import {
   LayoutDashboard,
   Calendar,
@@ -37,66 +39,190 @@ import {
   Key,
   Server,
   Palette,
-  Sliders
+  Sliders,
+  Eye
 } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const { hasPermission, isRole, isAnyRole } = usePermissions();
 
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, section: 'main' },
-    { name: 'Agenda', href: '/agenda', icon: Calendar, section: 'main' },
-    { name: 'Pacientes', href: '/pacientes', icon: Users, section: 'main' },
-    { name: 'Citas', href: '/citas', icon: Stethoscope, section: 'main' },
-    { name: 'Tratamientos', href: '/tratamientos', icon: Package, section: 'main' },
-    { name: 'Historia Clínica', href: '/historia-clinica', icon: Activity, section: 'main' },
-    { name: 'Consentimientos', href: '/consentimientos', icon: Shield, section: 'main' },
-    { name: 'Presupuestos', href: '/presupuestos', icon: FileText, section: 'main' },
-    { name: 'Facturación', href: '/facturacion', icon: CreditCard, section: 'main' },
-    { name: 'Caja', href: '/caja', icon: DollarSign, section: 'main' },
-    { name: 'Reportes', href: '/reportes', icon: BarChart3, section: 'main' },
-    { name: 'Usuarios', href: '/usuarios', icon: UserCheck, section: 'main' },
-    { name: 'Cita Online', href: '/cita-online', icon: Globe, section: 'main' },
-    { name: 'Importador', href: '/importador', icon: Upload, section: 'main' },
-    { name: 'Documentos', href: '/documentos', icon: FolderOpen, section: 'main' },
+  const getAllNavigation = () => [
+    // Main sections - accessible based on role
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, section: 'main', permission: 'dashboard', readOnly: false },
+    { name: 'Agenda', href: '/agenda', icon: Calendar, section: 'main', permission: 'agenda', readOnly: false },
+    { name: 'Pacientes', href: '/pacientes', icon: Users, section: 'main', permission: 'patients', readOnly: false },
+    { name: 'Citas', href: '/citas', icon: Stethoscope, section: 'main', permission: 'appointments', readOnly: false },
+    { name: 'Tratamientos', href: '/tratamientos', icon: Package, section: 'main', permission: 'treatments', readOnly: false },
+    { name: 'Historia Clínica', href: '/historia-clinica', icon: Activity, section: 'main', permission: 'clinical_history', readOnly: false },
+    { name: 'Consentimientos', href: '/consentimientos', icon: Shield, section: 'main', permission: 'consents', readOnly: false },
+    { name: 'Presupuestos', href: '/presupuestos', icon: FileText, section: 'main', permission: 'budgets', readOnly: false },
+    { name: 'Facturación', href: '/facturacion', icon: CreditCard, section: 'main', permission: 'billing', readOnly: false },
+    { name: 'Caja', href: '/caja', icon: DollarSign, section: 'main', permission: 'cash_management', readOnly: false },
+    { name: 'Reportes', href: '/reportes', icon: BarChart3, section: 'main', permission: 'reports', readOnly: false },
+    { name: 'Usuarios', href: '/usuarios', icon: UserCheck, section: 'main', permission: 'users_management', readOnly: false },
+    { name: 'Cita Online', href: '/cita-online', icon: Globe, section: 'main', permission: 'online_booking', readOnly: false },
+    { name: 'Importador', href: '/importador', icon: Upload, section: 'main', permission: 'data_import', readOnly: false },
+    { name: 'Documentos', href: '/documentos', icon: FolderOpen, section: 'main', permission: 'documents', readOnly: false },
     
     // Operations Section
-    { name: 'Inventario', href: '/inventario', icon: Package, section: 'operations' },
-    { name: 'Costes', href: '/costes', icon: Calculator, section: 'operations' },
-    { name: 'Pagos', href: '/pagos', icon: CreditCard, section: 'operations' },
-    { name: 'Integraciones', href: '/integraciones', icon: Zap, section: 'operations' },
+    { name: 'Inventario', href: '/inventario', icon: Package, section: 'operations', permission: 'inventory', readOnly: false },
+    { name: 'Costes', href: '/costes', icon: Calculator, section: 'operations', permission: 'costs', readOnly: false },
+    { name: 'Pagos', href: '/pagos', icon: CreditCard, section: 'operations', permission: 'payments', readOnly: false },
+    { name: 'Integraciones', href: '/integraciones', icon: Zap, section: 'operations', permission: 'integrations', readOnly: false },
     
     // External Section
-    { name: 'Portal Paciente', href: '/portal-paciente', icon: ExternalLink, section: 'external' },
-    { name: 'Portal Empleado', href: '/portal-empleado', icon: MessageSquare, section: 'external' },
+    { name: 'Portal Paciente', href: '/portal-paciente', icon: ExternalLink, section: 'external', permission: 'patient_portal', readOnly: false },
+    { name: 'Portal Empleado', href: '/portal-empleado', icon: MessageSquare, section: 'external', permission: 'employee_portal', readOnly: false },
     
     // HQ Section
-    { name: 'HQ Overview', href: '/hq/overview', icon: Target, section: 'hq' },
-    { name: 'HQ Comisiones', href: '/hq/comisiones', icon: Coins, section: 'hq' },
+    { name: 'HQ Overview', href: '/hq/overview', icon: Target, section: 'hq', permission: 'hq_overview', readOnly: false },
+    { name: 'HQ Comisiones', href: '/hq/comisiones', icon: Coins, section: 'hq', permission: 'hq_commissions', readOnly: false },
     
     // Marketing Section
-    { name: 'Marketing Funnels', href: '/marketing/funnels', icon: TrendingUp, section: 'marketing' },
-    { name: 'Marketing Comunicaciones', href: '/marketing/comunicaciones', icon: Mail, section: 'marketing' },
+    { name: 'Marketing Funnels', href: '/marketing/funnels', icon: TrendingUp, section: 'marketing', permission: 'marketing_funnels', readOnly: false },
+    { name: 'Marketing Comunicaciones', href: '/marketing/comunicaciones', icon: Mail, section: 'marketing', permission: 'marketing_communications', readOnly: false },
     
     // Digital Assets Section  
-    { name: 'DAM (Antes/Después)', href: '/dam', icon: Images, section: 'digital' },
-    { name: 'Telefonía', href: '/telefonia', icon: Phone, section: 'digital' },
-    { name: 'Financiación', href: '/financiacion', icon: Calculator, section: 'digital' },
-    { name: 'Analytics Cohortes', href: '/analytics/cohortes', icon: PieChart, section: 'digital' },
-    { name: 'Analytics Forecast', href: '/analytics/forecast', icon: TrendingUp, section: 'digital' },
+    { name: 'DAM (Antes/Después)', href: '/dam', icon: Images, section: 'digital', permission: 'dam', readOnly: false },
+    { name: 'Telefonía', href: '/telefonia', icon: Phone, section: 'digital', permission: 'telephony', readOnly: false },
+    { name: 'Financiación', href: '/financiacion', icon: Calculator, section: 'digital', permission: 'financing', readOnly: false },
+    { name: 'Analytics Cohortes', href: '/analytics/cohortes', icon: PieChart, section: 'digital', permission: 'analytics_cohorts', readOnly: false },
+    { name: 'Analytics Forecast', href: '/analytics/forecast', icon: TrendingUp, section: 'digital', permission: 'analytics_forecast', readOnly: false },
     
     // System & API Section
-    { name: 'Webhooks', href: '/webhooks', icon: Key, section: 'system' },
-    { name: 'API', href: '/api', icon: Zap, section: 'system' },
-    { name: 'Status', href: '/status', icon: Server, section: 'system' },
-    { name: 'Auditoría', href: '/auditoria', icon: Activity, section: 'system' },
+    { name: 'Webhooks', href: '/webhooks', icon: Key, section: 'system', permission: 'webhooks', readOnly: false },
+    { name: 'API', href: '/api', icon: Zap, section: 'system', permission: 'api_management', readOnly: false },
+    { name: 'Status', href: '/status', icon: Server, section: 'system', permission: 'system_status', readOnly: true },
+    { name: 'Auditoría', href: '/auditoria', icon: Activity, section: 'system', permission: 'audit', readOnly: true },
     
     // Settings Section
-    { name: 'Privacidad', href: '/ajustes/privacidad', icon: Shield, section: 'settings' },
-    { name: 'Branding', href: '/branding', icon: Palette, section: 'settings' },
-    { name: 'Campos Personalizados', href: '/campos-personalizados', icon: Sliders, section: 'settings' },
+    { name: 'Privacidad', href: '/ajustes/privacidad', icon: Shield, section: 'settings', permission: 'privacy_settings', readOnly: false },
+    { name: 'Branding', href: '/branding', icon: Palette, section: 'settings', permission: 'branding', readOnly: false },
+    { name: 'Campos Personalizados', href: '/campos-personalizados', icon: Sliders, section: 'settings', permission: 'custom_fields', readOnly: false },
   ];
+
+  const getNavigationForRole = () => {
+    const allNavigation = getAllNavigation();
+    
+    // Owner/HQ Admin - access to everything
+    if (user?.role === 'owner') {
+      return allNavigation;
+    }
+    
+    // HQ Analyst - only global reports and analytics
+    if (user?.role === 'hq_analyst') {
+      return allNavigation.filter(item => [
+        'dashboard', 'hq_overview', 'reports', 'analytics_cohorts', 
+        'analytics_forecast', 'costs', 'payments', 'audit'
+      ].includes(item.permission)).map(item => ({
+        ...item,
+        readOnly: true // All read-only for analyst
+      }));
+    }
+    
+    // Admin de Sede
+    if (user?.role === 'admin_sede') {
+      return allNavigation.filter(item => [
+        'dashboard', 'agenda', 'patients', 'appointments', 'clinical_history',
+        'consents', 'documents', 'budgets', 'billing', 'cash_management',
+        'inventory', 'costs', 'payments', 'reports', 'hq_commissions',
+        'telephony', 'dam', 'online_booking', 'users_management'
+      ].includes(item.permission));
+    }
+    
+    // Recepción
+    if (user?.role === 'reception') {
+      return allNavigation.filter(item => [
+        'agenda', 'patients', 'appointments', 'budgets', 'billing',
+        'cash_management', 'documents', 'consents', 'reports'
+      ].includes(item.permission));
+    }
+    
+    // Profesional Clínico
+    if (user?.role === 'clinical_professional') {
+      return allNavigation.filter(item => [
+        'agenda', 'patients', 'clinical_history', 'consents', 'budgets',
+        'documents', 'dam', 'reports'
+      ].includes(item.permission)).map(item => {
+        // Patients is read-only for clinical professionals
+        if (item.permission === 'patients') {
+          return { ...item, readOnly: true };
+        }
+        return item;
+      });
+    }
+    
+    // Asistente/Enfermería
+    if (user?.role === 'assistant_nurse') {
+      return allNavigation.filter(item => [
+        'agenda', 'patients', 'clinical_history', 'appointments', 
+        'documents', 'consents'
+      ].includes(item.permission)).map(item => {
+        // Most things are read-only or limited write
+        if (['agenda', 'patients'].includes(item.permission)) {
+          return { ...item, readOnly: true };
+        }
+        return item;
+      });
+    }
+    
+    // Finanzas/Caja
+    if (user?.role === 'finance') {
+      return allNavigation.filter(item => [
+        'billing', 'payments', 'cash_management', 'reports', 'costs', 'audit'
+      ].includes(item.permission)).map(item => {
+        // Costs and audit are read-only
+        if (['costs', 'audit'].includes(item.permission)) {
+          return { ...item, readOnly: true };
+        }
+        return item;
+      });
+    }
+    
+    // Marketing
+    if (user?.role === 'marketing') {
+      return allNavigation.filter(item => [
+        'marketing_funnels', 'marketing_communications', 'dam', 'online_booking', 'reports'
+      ].includes(item.permission)).map(item => {
+        // DAM is read-only, reports is read-only
+        if (['dam', 'reports'].includes(item.permission)) {
+          return { ...item, readOnly: true };
+        }
+        return item;
+      });
+    }
+    
+    // Operaciones/Inventario
+    if (user?.role === 'operations') {
+      return allNavigation.filter(item => [
+        'inventory', 'costs', 'reports'
+      ].includes(item.permission)).map(item => {
+        // Reports is read-only
+        if (item.permission === 'reports') {
+          return { ...item, readOnly: true };
+        }
+        return item;
+      });
+    }
+    
+    // Auditor Externo (Read-only)
+    if (user?.role === 'external_auditor') {
+      return allNavigation.filter(item => [
+        'reports', 'billing', 'cash_management', 'audit'
+      ].includes(item.permission)).map(item => ({
+        ...item,
+        readOnly: true // Everything is read-only for external auditor
+      }));
+    }
+    
+    // Default: empty navigation
+    return [];
+  };
+
+  const navigation = getNavigationForRole();
 
   const isActive = (href: string) => {
     return location.pathname === href || location.pathname.startsWith(href + '/');
@@ -170,7 +296,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   onClick={() => setSidebarOpen(false)}
                 >
                   <item.icon className="mr-4 h-6 w-6" />
-                  {item.name}
+                  <span className="flex-1">{item.name}</span>
+                  {item.readOnly && (
+                    <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
+                  )}
                 </Link>
               ))}
 
@@ -197,7 +326,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="mr-4 h-6 w-6" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
+                      )}
                     </Link>
                   ))}
                 </>
@@ -226,7 +358,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="mr-4 h-6 w-6" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
+                      )}
                     </Link>
                   ))}
                 </>
@@ -255,7 +390,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="mr-4 h-6 w-6" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
+                      )}
                     </Link>
                   ))}
                 </>
@@ -284,7 +422,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="mr-4 h-6 w-6" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
+                      )}
                     </Link>
                   ))}
                 </>
@@ -313,7 +454,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="mr-4 h-6 w-6" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
+                      )}
                     </Link>
                   ))}
                 </>
@@ -342,7 +486,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="mr-4 h-6 w-6" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
+                      )}
                     </Link>
                   ))}
                 </>
@@ -371,13 +518,39 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="mr-4 h-6 w-6" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
+                      )}
                     </Link>
                   ))}
                 </>
               )}
             </nav>
           </div>
+          
+          {/* Role info footer - Mobile */}
+          {user && (
+            <div className="flex-shrink-0 p-4 border-t border-gray-200">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                    <span className="text-xs font-medium text-white">
+                      {user.name?.charAt(0) || 'U'}
+                    </span>
+                  </div>
+                </div>
+                <div className="ml-3 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {navigation.length} páginas disponibles
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -402,9 +575,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   }`}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
+                  <span className="flex-1">{item.name}</span>
+                  {item.readOnly && (
+                    <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
+                  )}
                   {isActive(item.href) && (
-                    <ChevronRight className="ml-auto h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" />
                   )}
                 </Link>
               ))}
@@ -431,9 +607,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       }`}
                     >
                       <item.icon className="mr-3 h-5 w-5" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
+                      )}
                       {isActive(item.href) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       )}
                     </Link>
                   ))}
@@ -462,9 +641,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       }`}
                     >
                       <item.icon className="mr-3 h-5 w-5" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
+                      )}
                       {isActive(item.href) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       )}
                     </Link>
                   ))}
@@ -493,9 +675,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       }`}
                     >
                       <item.icon className="mr-3 h-5 w-5" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
+                      )}
                       {isActive(item.href) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       )}
                     </Link>
                   ))}
@@ -524,9 +709,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       }`}
                     >
                       <item.icon className="mr-3 h-5 w-5" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
+                      )}
                       {isActive(item.href) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       )}
                     </Link>
                   ))}
@@ -555,9 +743,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       }`}
                     >
                       <item.icon className="mr-3 h-5 w-5" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
+                      )}
                       {isActive(item.href) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       )}
                     </Link>
                   ))}
@@ -586,9 +777,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       }`}
                     >
                       <item.icon className="mr-3 h-5 w-5" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
+                      )}
                       {isActive(item.href) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       )}
                     </Link>
                   ))}
@@ -617,9 +811,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       }`}
                     >
                       <item.icon className="mr-3 h-5 w-5" />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.readOnly && (
+                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
+                      )}
                       {isActive(item.href) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       )}
                     </Link>
                   ))}
@@ -627,6 +824,29 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               )}
             </nav>
           </div>
+          
+          {/* Role info footer - Desktop */}
+          {user && (
+            <div className="flex-shrink-0 p-4 border-t border-gray-200">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                    <span className="text-xs font-medium text-white">
+                      {user.name?.charAt(0) || 'U'}
+                    </span>
+                  </div>
+                </div>
+                <div className="ml-3 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {navigation.length} páginas • {user.roleDisplayName}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -666,13 +886,22 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
                   <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">DR</span>
+                    <span className="text-sm font-medium text-white">
+                      {user?.name?.charAt(0) || 'U'}
+                    </span>
                   </div>
                 </div>
                 <div className="hidden md:block">
-                  <div className="text-sm font-medium text-gray-900">Dr. Rodriguez</div>
-                  <div className="text-xs text-gray-500">Administrador</div>
+                  <div className="text-sm font-medium text-gray-900">{user?.name || 'Usuario'}</div>
+                  <div className="text-xs text-gray-500">{user?.roleDisplayName || user?.role || 'Usuario'}</div>
                 </div>
+                <button
+                  onClick={logout}
+                  className="text-gray-400 hover:text-gray-500 p-1 rounded-md hover:bg-gray-100 transition-colors"
+                  title="Cerrar sesión"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
               </div>
             </div>
           </div>

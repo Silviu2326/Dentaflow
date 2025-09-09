@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Agenda from './pages/Agenda';
 import Pacientes from './pages/Pacientes';
@@ -48,8 +51,13 @@ import CamposPersonalizados from './pages/CamposPersonalizados';
 function App() {
   return (
     <Router>
-      <Layout>
+      <AuthProvider>
         <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/*" element={
+            <ProtectedRoute>
+              <Layout>
+                <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/agenda" element={<Agenda />} />
@@ -107,8 +115,12 @@ function App() {
           <Route path="/ajustes/privacidad" element={<AjustesPrivacidad />} />
           <Route path="/branding" element={<Branding />} />
           <Route path="/campos-personalizados" element={<CamposPersonalizados />} />
+                </Routes>
+              </Layout>
+            </ProtectedRoute>
+          } />
         </Routes>
-      </Layout>
+      </AuthProvider>
     </Router>
   );
 }

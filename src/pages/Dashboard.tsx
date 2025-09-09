@@ -1,7 +1,12 @@
 import React from 'react';
-import { Calendar, Users, FileText, DollarSign, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Users, FileText, DollarSign, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, AlertCircle, Shield, BarChart3, Building } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../hooks/usePermissions';
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const { hasPermission, isRole, isAnyRole } = usePermissions();
+
   const kpis = [
     {
       name: 'Citas del Día',
@@ -65,11 +70,60 @@ const Dashboard = () => {
     }
   };
 
+  const getRoleSpecificGreeting = () => {
+    const hour = new Date().getHours();
+    const timeGreeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
+    
+    return `${timeGreeting}, ${user?.name || 'Usuario'}`;
+  };
+
+  const getRoleSpecificDescription = () => {
+    switch (user?.role) {
+      case 'owner':
+        return 'Visión global de todas las sedes y operaciones';
+      case 'hq_analyst':
+        return 'Análisis y reportes globales de la organización';
+      case 'admin_sede':
+        return 'Gestión completa de su sede';
+      case 'reception':
+        return 'Gestión de citas y atención al paciente';
+      case 'clinical_professional':
+        return 'Panel clínico - Sus pacientes y tratamientos';
+      case 'assistant_nurse':
+        return 'Soporte clínico y asistencia';
+      case 'finance':
+        return 'Control financiero y facturación';
+      case 'marketing':
+        return 'Campañas y comunicación con pacientes';
+      case 'operations':
+        return 'Inventario y operaciones';
+      case 'external_auditor':
+        return 'Vista de solo lectura para auditoría';
+      default:
+        return 'Resumen de la actividad de hoy';
+    }
+  };
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Resumen de la actividad de hoy</p>
+        <div className="flex items-center space-x-4 mb-4">
+          <div className="flex-shrink-0">
+            <div className="h-12 w-12 rounded-full bg-blue-500 flex items-center justify-center">
+              <span className="text-lg font-medium text-white">
+                {user?.name?.charAt(0) || 'U'}
+              </span>
+            </div>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{getRoleSpecificGreeting()}</h1>
+            <p className="text-gray-600">{getRoleSpecificDescription()}</p>
+            <div className="flex items-center mt-2">
+              <Shield className="h-4 w-4 text-green-500 mr-1" />
+              <span className="text-sm text-green-600 font-medium">{user?.roleDisplayName}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* KPIs */}
@@ -107,8 +161,38 @@ const Dashboard = () => {
         ))}
       </div>
 
+      {/* Role-specific sections */}
+      {isAnyRole(['owner', 'hq_analyst']) && (
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+            <div className="flex items-center">
+              <Building className="h-8 w-8 mr-3" />
+              <div>
+                <h3 className="text-lg font-medium">Vista Global HQ</h3>
+                <p className="text-purple-100">Acceso a datos consolidados de todas las sedes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isRole('external_auditor') && (
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-lg shadow-lg p-6 text-white">
+            <div className="flex items-center">
+              <Shield className="h-8 w-8 mr-3" />
+              <div>
+                <h3 className="text-lg font-medium">Modo Auditoría</h3>
+                <p className="text-red-100">Vista de solo lectura para revisión externa</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Citas de Hoy */}
+        {/* Citas de Hoy - Visible para roles que manejan citas */}
+        {hasPermission('appointments') && (
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-medium text-gray-900">Citas de Hoy</h2>
@@ -142,8 +226,10 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+        )}
 
-        {/* Resumen Financiero */}
+        {/* Resumen Financiero - Solo para roles con permisos financieros */}
+        {(hasPermission('billing') || hasPermission('financial_reports') || user?.role === 'owner') && (
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-medium text-gray-900">Resumen Financiero</h2>
@@ -170,6 +256,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* Alertas y Notificaciones */}
