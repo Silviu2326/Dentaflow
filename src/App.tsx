@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { DarkModeProvider } from './contexts/DarkModeContext';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -52,6 +53,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <DarkModeProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/*" element={
@@ -120,6 +122,7 @@ function App() {
             </ProtectedRoute>
           } />
         </Routes>
+        </DarkModeProvider>
       </AuthProvider>
     </Router>
   );

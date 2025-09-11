@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, FileText, Download, Edit, Calendar } from 'lucide-react';
+import NewEvaluationModal from '../components/NewEvaluationModal';
 
 const HistoriaClinica = () => {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('historia');
+  const [showNewEvaluationModal, setShowNewEvaluationModal] = useState(false);
 
   const paciente = {
     name: 'Ana García López',
@@ -82,6 +84,10 @@ const HistoriaClinica = () => {
     { id: 'plantillas', name: 'Plantillas' }
   ];
 
+  const handleNewEvaluation = (evaluationData: any) => {
+    console.log('Nueva evaluación creada:', evaluationData);
+  };
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -102,7 +108,13 @@ const HistoriaClinica = () => {
               <Download className="h-5 w-5 mr-2" />
               Exportar PDF
             </button>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center">
+            <button 
+              onClick={() => {
+                console.log('Botón clickeado, abriendo modal');
+                setShowNewEvaluationModal(true);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center"
+            >
               <Plus className="h-5 w-5 mr-2" />
               Nueva Entrada
             </button>
@@ -324,6 +336,13 @@ const HistoriaClinica = () => {
           )}
         </div>
       </div>
+
+      {/* Modal Nueva Evaluación */}
+      <NewEvaluationModal
+        isOpen={showNewEvaluationModal}
+        onClose={() => setShowNewEvaluationModal(false)}
+        onSubmit={handleNewEvaluation}
+      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   CreditCard,
   Search,
@@ -19,6 +19,8 @@ import {
   ArrowLeft,
   BarChart3
 } from 'lucide-react';
+import { DarkModeContext } from '../contexts/DarkModeContext';
+import RegisterPaymentModal from '../components/RegisterPaymentModal';
 
 interface Pago {
   id: string;
@@ -67,10 +69,12 @@ interface Devolucion {
 }
 
 const Pagos: React.FC = () => {
+  const { isDarkMode } = useContext(DarkModeContext);
   const [activeTab, setActiveTab] = useState<'pagos' | 'links' | 'devoluciones' | 'conciliacion'>('pagos');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEstado, setSelectedEstado] = useState('todos');
   const [selectedMetodo, setSelectedMetodo] = useState('todos');
+  const [showRegisterPaymentModal, setShowRegisterPaymentModal] = useState(false);
 
   const [pagos] = useState<Pago[]>([
     {
@@ -215,21 +219,35 @@ const Pagos: React.FC = () => {
   ]);
 
   const getEstadoColor = (estado: string) => {
-    switch (estado) {
-      case 'completado':
-      case 'pagado':
-      case 'completada': return 'text-green-600 bg-green-100';
-      case 'pendiente':
-      case 'activo':
-      case 'solicitada': return 'text-yellow-600 bg-yellow-100';
-      case 'procesando': return 'text-blue-600 bg-blue-100';
-      case 'fallido':
-      case 'rechazada': return 'text-red-600 bg-red-100';
-      case 'devuelto':
-      case 'vencido':
-      case 'cancelado': return 'text-gray-600 bg-gray-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
+    const baseClasses = isDarkMode ? {
+      completado: 'text-green-300 bg-green-900/50',
+      pagado: 'text-green-300 bg-green-900/50',
+      completada: 'text-green-300 bg-green-900/50',
+      pendiente: 'text-yellow-300 bg-yellow-900/50',
+      activo: 'text-yellow-300 bg-yellow-900/50',
+      solicitada: 'text-yellow-300 bg-yellow-900/50',
+      procesando: 'text-blue-300 bg-blue-900/50',
+      fallido: 'text-red-300 bg-red-900/50',
+      rechazada: 'text-red-300 bg-red-900/50',
+      devuelto: 'text-gray-300 bg-gray-800/50',
+      vencido: 'text-gray-300 bg-gray-800/50',
+      cancelado: 'text-gray-300 bg-gray-800/50'
+    } : {
+      completado: 'text-green-600 bg-green-100',
+      pagado: 'text-green-600 bg-green-100',
+      completada: 'text-green-600 bg-green-100',
+      pendiente: 'text-yellow-600 bg-yellow-100',
+      activo: 'text-yellow-600 bg-yellow-100',
+      solicitada: 'text-yellow-600 bg-yellow-100',
+      procesando: 'text-blue-600 bg-blue-100',
+      fallido: 'text-red-600 bg-red-100',
+      rechazada: 'text-red-600 bg-red-100',
+      devuelto: 'text-gray-600 bg-gray-100',
+      vencido: 'text-gray-600 bg-gray-100',
+      cancelado: 'text-gray-600 bg-gray-100'
+    };
+    
+    return baseClasses[estado as keyof typeof baseClasses] || (isDarkMode ? 'text-gray-300 bg-gray-800/50' : 'text-gray-600 bg-gray-100');
   };
 
   const getMetodoIcon = (metodo: string) => {
@@ -279,62 +297,122 @@ const Pagos: React.FC = () => {
     devolucion.motivo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleRegisterPayment = (paymentData: any) => {
+    console.log('Registering payment:', paymentData);
+  };
+
   const renderPagos = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Gestión de Pagos</h3>
-        <div className="flex space-x-3">
-          <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          Gestión de Pagos
+        </h3>
+        <div className="flex flex-wrap gap-3">
+          <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-900/30'
+              : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200/30'
+          }`}>
+            <Download className="h-4 w-4" />
+            <span>Exportar</span>
           </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
-            <Plus className="h-4 w-4 mr-2" />
-            Registrar Pago
+          <button 
+            onClick={() => setShowRegisterPaymentModal(true)}
+            className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+              isDarkMode 
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/30'
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-200/30'
+            }`}
+          >
+            <Plus className="h-4 w-4" />
+            <span>Registrar Pago</span>
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-green-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <CheckCircle className="h-8 w-8 text-green-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-green-600">Pagos Completados</p>
-              <p className="text-2xl font-semibold text-gray-900">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className={`p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-green-900/40 to-emerald-900/40 border-green-700/50 shadow-xl shadow-green-900/20'
+            : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200/50 shadow-xl shadow-green-200/20'
+        }`}>
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl ${
+              isDarkMode ? 'bg-green-800/50' : 'bg-green-100'
+            }`}>
+              <CheckCircle className={`h-8 w-8 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${isDarkMode ? 'text-green-300' : 'text-green-600'}`}>
+                Pagos Completados
+              </p>
+              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 €{pagos.filter(p => p.estado === 'completado').reduce((acc, p) => acc + p.importe, 0).toLocaleString()}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-yellow-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <Clock className="h-8 w-8 text-yellow-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-yellow-600">Pendientes</p>
-              <p className="text-2xl font-semibold text-gray-900">
+        
+        <div className={`p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border-yellow-700/50 shadow-xl shadow-yellow-900/20'
+            : 'bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200/50 shadow-xl shadow-yellow-200/20'
+        }`}>
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl ${
+              isDarkMode ? 'bg-yellow-800/50' : 'bg-yellow-100'
+            }`}>
+              <Clock className={`h-8 w-8 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`} />
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${isDarkMode ? 'text-yellow-300' : 'text-yellow-600'}`}>
+                Pendientes
+              </p>
+              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 €{pagos.filter(p => p.estado === 'pendiente').reduce((acc, p) => acc + p.importe, 0).toLocaleString()}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-red-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <XCircle className="h-8 w-8 text-red-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-red-600">Fallidos</p>
-              <p className="text-2xl font-semibold text-gray-900">
+        
+        <div className={`p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-red-900/40 to-pink-900/40 border-red-700/50 shadow-xl shadow-red-900/20'
+            : 'bg-gradient-to-br from-red-50 to-pink-50 border-red-200/50 shadow-xl shadow-red-200/20'
+        }`}>
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl ${
+              isDarkMode ? 'bg-red-800/50' : 'bg-red-100'
+            }`}>
+              <XCircle className={`h-8 w-8 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>
+                Fallidos
+              </p>
+              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {pagos.filter(p => p.estado === 'fallido').length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <DollarSign className="h-8 w-8 text-blue-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-blue-600">Comisiones</p>
-              <p className="text-2xl font-semibold text-gray-900">
+        
+        <div className={`p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border-blue-700/50 shadow-xl shadow-blue-900/20'
+            : 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200/50 shadow-xl shadow-blue-200/20'
+        }`}>
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl ${
+              isDarkMode ? 'bg-blue-800/50' : 'bg-blue-100'
+            }`}>
+              <DollarSign className={`h-8 w-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>
+                Comisiones
+              </p>
+              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 €{pagos.reduce((acc, p) => acc + p.comision, 0).toFixed(2)}
               </p>
             </div>
@@ -342,122 +420,236 @@ const Pagos: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
+      <div className={`rounded-2xl backdrop-blur-sm border transition-all duration-300 ${
+        isDarkMode 
+          ? 'bg-gradient-to-br from-gray-800/60 to-gray-900/60 border-gray-700/50 shadow-xl'
+          : 'bg-gradient-to-br from-white/90 to-gray-50/90 border-gray-200/50 shadow-xl'
+      }`}>
+        <div className="divide-y divide-gray-200/50">
           {filteredPagos.map((pago) => (
-            <li key={pago.id} className="px-6 py-4">
+            <div key={pago.id} className={`p-6 transition-all duration-300 hover:bg-opacity-80 ${
+              isDarkMode ? 'hover:bg-gray-700/20' : 'hover:bg-gray-50/50'
+            }`}>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h4 className="text-sm font-medium text-gray-900">{pago.pacienteNombre}</h4>
-                    <span className="text-sm text-gray-500">{pago.numeroTransaccion}</span>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getEstadoColor(pago.estado)}`}>
-                      {getEstadoIcon(pago.estado)}
-                      <span className="ml-1 capitalize">{pago.estado}</span>
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <h4 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {pago.pacienteNombre}
+                    </h4>
+                    <span className={`text-sm font-mono px-3 py-1 rounded-lg ${
+                      isDarkMode ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {pago.numeroTransaccion}
                     </span>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-semibold border ${getEstadoColor(pago.estado)}`}>
+                      {getEstadoIcon(pago.estado)}
+                      <span className="ml-2 capitalize">{pago.estado}</span>
+                    </span>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-semibold border ${
+                      isDarkMode ? 'bg-gray-700/50 text-gray-300 border-gray-600' : 'bg-gray-50 text-gray-600 border-gray-200'
+                    }`}>
                       {getMetodoIcon(pago.metodoPago)}
-                      <span className="ml-1 capitalize">{pago.metodoPago.replace('_', ' ')}</span>
+                      <span className="ml-2 capitalize">{pago.metodoPago.replace('_', ' ')}</span>
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{pago.concepto}</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                    <div>
-                      <span className="font-medium">Importe:</span> €{pago.importe.toFixed(2)}
+                  <p className={`text-base mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {pago.concepto}
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className={`p-3 rounded-xl ${
+                      isDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'
+                    }`}>
+                      <span className={`block text-xs font-semibold ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}>Importe</span>
+                      <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        €{pago.importe.toFixed(2)}
+                      </span>
                     </div>
-                    <div>
-                      <span className="font-medium">Comisión:</span> €{pago.comision.toFixed(2)}
+                    <div className={`p-3 rounded-xl ${
+                      isDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'
+                    }`}>
+                      <span className={`block text-xs font-semibold ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}>Comisión</span>
+                      <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        €{pago.comision.toFixed(2)}
+                      </span>
                     </div>
-                    <div>
-                      <span className="font-medium">Neto:</span> €{pago.importeNeto.toFixed(2)}
+                    <div className={`p-3 rounded-xl ${
+                      isDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'
+                    }`}>
+                      <span className={`block text-xs font-semibold ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}>Neto</span>
+                      <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        €{pago.importeNeto.toFixed(2)}
+                      </span>
                     </div>
-                    <div>
-                      <span className="font-medium">Fecha:</span> {new Date(pago.fechaPago).toLocaleDateString()}
+                    <div className={`p-3 rounded-xl ${
+                      isDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'
+                    }`}>
+                      <span className={`block text-xs font-semibold ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}>Fecha</span>
+                      <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {new Date(pago.fechaPago).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
                   {pago.pasarelaPago && (
-                    <div className="mt-1 text-xs text-gray-500">
-                      Pasarela: {pago.pasarelaPago} {pago.referenciaExterna && `| Ref: ${pago.referenciaExterna}`}
+                    <div className={`mt-3 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <span className="font-semibold">Pasarela:</span> {pago.pasarelaPago}
+                      {pago.referenciaExterna && (
+                        <span className="ml-2">
+                          <span className="font-semibold">Ref:</span> {pago.referenciaExterna}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
-                <div className="flex space-x-2 ml-4">
-                  <button className="text-gray-400 hover:text-gray-500">
-                    <Eye className="h-4 w-4" />
+                <div className="flex flex-col space-y-2 ml-6">
+                  <button className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+                    isDarkMode 
+                      ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'
+                      : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                  }`}>
+                    <Eye className="h-5 w-5" />
                   </button>
-                  <button className="text-gray-400 hover:text-gray-500">
-                    <Edit className="h-4 w-4" />
+                  <button className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+                    isDarkMode 
+                      ? 'text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20'
+                      : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'
+                  }`}>
+                    <Edit className="h-5 w-5" />
                   </button>
                   {pago.estado === 'fallido' && (
-                    <button className="text-red-400 hover:text-red-500">
-                      <RefreshCw className="h-4 w-4" />
+                    <button className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+                      isDarkMode 
+                        ? 'text-red-400 hover:text-red-300 hover:bg-red-900/20'
+                        : 'text-red-400 hover:text-red-600 hover:bg-red-50'
+                    }`}>
+                      <RefreshCw className="h-5 w-5" />
                     </button>
                   )}
                 </div>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );
 
   const renderLinks = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Links de Pago</h3>
-        <div className="flex space-x-3">
-          <button className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 flex items-center">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar Estados
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          Links de Pago
+        </h3>
+        <div className="flex flex-wrap gap-3">
+          <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-900/30'
+              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-200/30'
+          }`}>
+            <RefreshCw className="h-4 w-4" />
+            <span>Actualizar Estados</span>
           </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
-            <Plus className="h-4 w-4 mr-2" />
-            Crear Link
+          <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/30'
+              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-200/30'
+          }`}>
+            <Plus className="h-4 w-4" />
+            <span>Crear Link</span>
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-green-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <CheckCircle className="h-8 w-8 text-green-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-green-600">Links Pagados</p>
-              <p className="text-2xl font-semibold text-gray-900">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className={`p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-green-900/40 to-emerald-900/40 border-green-700/50 shadow-xl shadow-green-900/20'
+            : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200/50 shadow-xl shadow-green-200/20'
+        }`}>
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl ${
+              isDarkMode ? 'bg-green-800/50' : 'bg-green-100'
+            }`}>
+              <CheckCircle className={`h-8 w-8 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${isDarkMode ? 'text-green-300' : 'text-green-600'}`}>
+                Links Pagados
+              </p>
+              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {linksPago.filter(l => l.estado === 'pagado').length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <Link className="h-8 w-8 text-blue-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-blue-600">Links Activos</p>
-              <p className="text-2xl font-semibold text-gray-900">
+        
+        <div className={`p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border-blue-700/50 shadow-xl shadow-blue-900/20'
+            : 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200/50 shadow-xl shadow-blue-200/20'
+        }`}>
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl ${
+              isDarkMode ? 'bg-blue-800/50' : 'bg-blue-100'
+            }`}>
+              <Link className={`h-8 w-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>
+                Links Activos
+              </p>
+              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {linksPago.filter(l => l.estado === 'activo').length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-red-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <AlertTriangle className="h-8 w-8 text-red-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-red-600">Links Vencidos</p>
-              <p className="text-2xl font-semibold text-gray-900">
+        
+        <div className={`p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-red-900/40 to-pink-900/40 border-red-700/50 shadow-xl shadow-red-900/20'
+            : 'bg-gradient-to-br from-red-50 to-pink-50 border-red-200/50 shadow-xl shadow-red-200/20'
+        }`}>
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl ${
+              isDarkMode ? 'bg-red-800/50' : 'bg-red-100'
+            }`}>
+              <AlertTriangle className={`h-8 w-8 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>
+                Links Vencidos
+              </p>
+              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {linksPago.filter(l => l.estado === 'vencido').length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-yellow-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <DollarSign className="h-8 w-8 text-yellow-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-yellow-600">Importe Pendiente</p>
-              <p className="text-2xl font-semibold text-gray-900">
+        
+        <div className={`p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
+          isDarkMode 
+            ? 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border-yellow-700/50 shadow-xl shadow-yellow-900/20'
+            : 'bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200/50 shadow-xl shadow-yellow-200/20'
+        }`}>
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl ${
+              isDarkMode ? 'bg-yellow-800/50' : 'bg-yellow-100'
+            }`}>
+              <DollarSign className={`h-8 w-8 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`} />
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${isDarkMode ? 'text-yellow-300' : 'text-yellow-600'}`}>
+                Importe Pendiente
+              </p>
+              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 €{linksPago.filter(l => l.estado === 'activo').reduce((acc, l) => acc + l.importe, 0).toLocaleString()}
               </p>
             </div>
@@ -465,79 +657,153 @@ const Pagos: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
+      <div className={`rounded-2xl backdrop-blur-sm border transition-all duration-300 ${
+        isDarkMode 
+          ? 'bg-gradient-to-br from-gray-800/60 to-gray-900/60 border-gray-700/50 shadow-xl'
+          : 'bg-gradient-to-br from-white/90 to-gray-50/90 border-gray-200/50 shadow-xl'
+      }`}>
+        <div className="divide-y divide-gray-200/50">
           {filteredLinks.map((link) => (
-            <li key={link.id} className="px-6 py-4">
+            <div key={link.id} className={`p-6 transition-all duration-300 hover:bg-opacity-80 ${
+              isDarkMode ? 'hover:bg-gray-700/20' : 'hover:bg-gray-50/50'
+            }`}>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h4 className="text-sm font-medium text-gray-900">{link.pacienteNombre}</h4>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getEstadoColor(link.estado)}`}>
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <h4 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {link.pacienteNombre}
+                    </h4>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-semibold border ${getEstadoColor(link.estado)}`}>
                       {getEstadoIcon(link.estado)}
-                      <span className="ml-1 capitalize">{link.estado}</span>
+                      <span className="ml-2 capitalize">{link.estado}</span>
                     </span>
                     {link.intentosPago > 0 && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-semibold border ${
+                        isDarkMode ? 'bg-blue-900/50 text-blue-300 border-blue-700' : 'bg-blue-100 text-blue-600 border-blue-200'
+                      }`}>
                         {link.intentosPago} intentos
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{link.concepto}</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                    <div>
-                      <span className="font-medium">Importe:</span> €{link.importe.toFixed(2)}
+                  <p className={`text-base mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {link.concepto}
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className={`p-3 rounded-xl ${
+                      isDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'
+                    }`}>
+                      <span className={`block text-xs font-semibold ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}>Importe</span>
+                      <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        €{link.importe.toFixed(2)}
+                      </span>
                     </div>
-                    <div>
-                      <span className="font-medium">Creado:</span> {new Date(link.fechaCreacion).toLocaleDateString()}
+                    <div className={`p-3 rounded-xl ${
+                      isDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'
+                    }`}>
+                      <span className={`block text-xs font-semibold ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}>Creado</span>
+                      <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {new Date(link.fechaCreacion).toLocaleDateString()}
+                      </span>
                     </div>
-                    <div className={`${new Date(link.fechaVencimiento) < new Date() ? 'text-red-600' : ''}`}>
-                      <span className="font-medium">Vence:</span> {new Date(link.fechaVencimiento).toLocaleDateString()}
+                    <div className={`p-3 rounded-xl ${
+                      isDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'
+                    } ${new Date(link.fechaVencimiento) < new Date() ? (isDarkMode ? 'border border-red-500/50' : 'border border-red-400') : ''}`}>
+                      <span className={`block text-xs font-semibold ${
+                        new Date(link.fechaVencimiento) < new Date() 
+                          ? (isDarkMode ? 'text-red-400' : 'text-red-600')
+                          : (isDarkMode ? 'text-gray-400' : 'text-gray-500')
+                      }`}>Vence</span>
+                      <span className={`text-lg font-bold ${
+                        new Date(link.fechaVencimiento) < new Date() 
+                          ? (isDarkMode ? 'text-red-400' : 'text-red-600')
+                          : (isDarkMode ? 'text-white' : 'text-gray-900')
+                      }`}>
+                        {new Date(link.fechaVencimiento).toLocaleDateString()}
+                      </span>
                     </div>
                     {link.ultimoIntento && (
-                      <div>
-                        <span className="font-medium">Último intento:</span> {new Date(link.ultimoIntento).toLocaleDateString()}
+                      <div className={`p-3 rounded-xl ${
+                        isDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'
+                      }`}>
+                        <span className={`block text-xs font-semibold ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Último intento</span>
+                        <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {new Date(link.ultimoIntento).toLocaleDateString()}
+                        </span>
                       </div>
                     )}
                   </div>
-                  <div className="mt-2 flex items-center space-x-2 text-xs text-gray-500">
-                    <Link className="h-3 w-3" />
-                    <span className="font-mono bg-gray-100 px-2 py-1 rounded">{link.url}</span>
+                  <div className={`mt-4 flex items-center space-x-2 p-3 rounded-xl ${
+                    isDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'
+                  }`}>
+                    <Link className={`h-4 w-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                    <span className={`font-mono text-sm px-2 py-1 rounded ${
+                      isDarkMode ? 'bg-gray-800/50 text-gray-300' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {link.url}
+                    </span>
                   </div>
                 </div>
-                <div className="flex space-x-2 ml-4">
-                  <button className="text-gray-400 hover:text-gray-500">
-                    <Eye className="h-4 w-4" />
+                <div className="flex flex-col space-y-2 ml-6">
+                  <button className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+                    isDarkMode 
+                      ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'
+                      : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                  }`}>
+                    <Eye className="h-5 w-5" />
                   </button>
-                  <button className="text-gray-400 hover:text-gray-500">
-                    <Edit className="h-4 w-4" />
+                  <button className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+                    isDarkMode 
+                      ? 'text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20'
+                      : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'
+                  }`}>
+                    <Edit className="h-5 w-5" />
                   </button>
                   {link.estado === 'activo' && (
-                    <button className="text-blue-400 hover:text-blue-500">
-                      <RefreshCw className="h-4 w-4" />
+                    <button className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+                      isDarkMode 
+                        ? 'text-blue-400 hover:text-blue-300 hover:bg-blue-900/20'
+                        : 'text-blue-400 hover:text-blue-600 hover:bg-blue-50'
+                    }`}>
+                      <RefreshCw className="h-5 w-5" />
                     </button>
                   )}
                 </div>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );
 
   const renderDevoluciones = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Devoluciones y Reembolsos</h3>
-        <div className="flex space-x-3">
-          <button className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 flex items-center">
-            <Download className="h-4 w-4 mr-2" />
-            Reporte Devoluciones
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          Devoluciones y Reembolsos
+        </h3>
+        <div className="flex flex-wrap gap-3">
+          <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg shadow-red-900/30'
+              : 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg shadow-red-200/30'
+          }`}>
+            <Download className="h-4 w-4" />
+            <span>Reporte Devoluciones</span>
           </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Devolución
+          <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/30'
+              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-200/30'
+          }`}>
+            <Plus className="h-4 w-4" />
+            <span>Nueva Devolución</span>
           </button>
         </div>
       </div>
@@ -651,17 +917,27 @@ const Pagos: React.FC = () => {
   );
 
   const renderConciliacion = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Conciliación de Cobros</h3>
-        <div className="flex space-x-3">
-          <button className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 flex items-center">
-            <Upload className="h-4 w-4 mr-2" />
-            Importar Extracto
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          Conciliación de Cobros
+        </h3>
+        <div className="flex flex-wrap gap-3">
+          <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-900/30'
+              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-200/30'
+          }`}>
+            <Upload className="h-4 w-4" />
+            <span>Importar Extracto</span>
           </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Ejecutar Conciliación
+          <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/30'
+              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-200/30'
+          }`}>
+            <BarChart3 className="h-4 w-4" />
+            <span>Ejecutar Conciliación</span>
           </button>
         </div>
       </div>
@@ -699,21 +975,29 @@ const Pagos: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="text-md font-medium text-gray-900 mb-4">Última Conciliación - 15 Enero 2024</h4>
+      <div className={`rounded-2xl backdrop-blur-sm border transition-all duration-300 p-6 ${
+        isDarkMode 
+          ? 'bg-gradient-to-br from-gray-800/60 to-gray-900/60 border-gray-700/50 shadow-xl'
+          : 'bg-gradient-to-br from-white/90 to-gray-50/90 border-gray-200/50 shadow-xl'
+      }`}>
+        <h4 className={`text-xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Última Conciliación - 15 Enero 2024</h4>
         
         <div className="space-y-4">
-          <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+          <div className={`flex justify-between items-center p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-700/50'
+              : 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50'
+          }`}>
             <div className="flex items-center">
-              <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+              <CheckCircle className={`h-6 w-6 mr-4 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
               <div>
-                <p className="text-sm font-medium text-gray-900">Stripe - Pagos con tarjeta</p>
-                <p className="text-xs text-gray-500">Periodo: 01-15 Enero 2024</p>
+                <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Stripe - Pagos con tarjeta</p>
+                <p className={`text-xs ${isDarkMode ? 'text-green-300' : 'text-green-600'}`}>Periodo: 01-15 Enero 2024</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm font-semibold text-gray-900">€8,450.20</p>
-              <p className="text-xs text-gray-500">89 transacciones</p>
+              <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>€8,450.20</p>
+              <p className={`text-xs ${isDarkMode ? 'text-green-300' : 'text-green-600'}`}>89 transacciones</p>
             </div>
           </div>
 
@@ -775,113 +1059,179 @@ const Pagos: React.FC = () => {
   );
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Gestión de Pagos</h1>
-        <p className="text-gray-600">TPV/links, conciliación de cobros y devoluciones</p>
+    <div className={`min-h-screen p-6 transition-colors duration-300 ${
+      isDarkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900/20 to-purple-900/20' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+    }`}>
+      <div className="mb-8">
+        <div className={`rounded-2xl p-6 backdrop-blur-sm border transition-all duration-300 ${
+          isDarkMode 
+            ? 'bg-gradient-to-r from-blue-900/40 to-purple-900/40 border-blue-700/50 shadow-xl shadow-blue-900/20' 
+            : 'bg-gradient-to-r from-white/80 to-blue-50/80 border-blue-200/50 shadow-xl shadow-blue-200/20'
+        }`}>
+          <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            Gestión de Pagos
+          </h1>
+          <p className={`text-lg ${isDarkMode ? 'text-blue-200' : 'text-blue-700'}`}>
+            TPV/links, conciliación de cobros y devoluciones
+          </p>
+        </div>
       </div>
 
-      <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('pagos')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'pagos'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            <CreditCard className="h-4 w-4 inline mr-2" />
-            Pagos
-          </button>
-          <button
-            onClick={() => setActiveTab('links')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'links'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            <Link className="h-4 w-4 inline mr-2" />
-            Links de Pago
-          </button>
-          <button
-            onClick={() => setActiveTab('devoluciones')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'devoluciones'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            <ArrowLeft className="h-4 w-4 inline mr-2" />
-            Devoluciones
-          </button>
-          <button
-            onClick={() => setActiveTab('conciliacion')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'conciliacion'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            <BarChart3 className="h-4 w-4 inline mr-2" />
-            Conciliación
-          </button>
+      <div className={`mb-8 rounded-2xl backdrop-blur-sm border transition-all duration-300 ${  
+        isDarkMode 
+          ? 'bg-gradient-to-r from-gray-800/60 to-gray-900/60 border-gray-700/50' 
+          : 'bg-gradient-to-r from-white/90 to-gray-50/90 border-gray-200/50'
+      }`}>
+        <nav className="p-6">
+          <div className="flex flex-wrap gap-4">
+            <button
+              onClick={() => setActiveTab('pagos')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+                activeTab === 'pagos'
+                  ? isDarkMode 
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-900/30'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-200/30'
+                  : isDarkMode
+                    ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <CreditCard className="h-5 w-5" />
+              <span>Pagos</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('links')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+                activeTab === 'links'
+                  ? isDarkMode 
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-900/30'
+                    : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-200/30'
+                  : isDarkMode
+                    ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <Link className="h-5 w-5" />
+              <span>Links de Pago</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('devoluciones')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+                activeTab === 'devoluciones'
+                  ? isDarkMode 
+                    ? 'bg-gradient-to-r from-red-600 to-pink-600 text-white shadow-lg shadow-red-900/30'
+                    : 'bg-gradient-to-r from-red-600 to-pink-600 text-white shadow-lg shadow-red-200/30'
+                  : isDarkMode
+                    ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span>Devoluciones</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('conciliacion')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center space-x-2 ${
+                activeTab === 'conciliacion'
+                  ? isDarkMode 
+                    ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg shadow-green-900/30'
+                    : 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg shadow-green-200/30'
+                  : isDarkMode
+                    ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span>Conciliación</span>
+            </button>
+          </div>
         </nav>
       </div>
 
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-        <div className="flex-1 min-w-0">
-          <div className="relative">
-            <Search className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400 ml-3" />
-            <input
-              type="text"
-              className="block w-full border-gray-300 rounded-md pl-10 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder={
-                activeTab === 'pagos' ? 'Buscar pagos...' :
-                activeTab === 'links' ? 'Buscar links...' :
-                activeTab === 'devoluciones' ? 'Buscar devoluciones...' :
-                'Buscar transacciones...'
-              }
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      <div className={`mb-8 p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 ${
+        isDarkMode 
+          ? 'bg-gradient-to-r from-gray-800/60 to-gray-900/60 border-gray-700/50' 
+          : 'bg-gradient-to-r from-white/90 to-gray-50/90 border-gray-200/50'
+      }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+          <div className="flex-1 max-w-md">
+            <div className="relative">
+              <Search className={`pointer-events-none absolute inset-y-0 left-0 h-full w-5 ml-3 ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-400'
+              }`} />
+              <input
+                type="text"
+                className={`block w-full px-4 py-3 pl-10 rounded-xl border transition-all duration-300 focus:ring-2 focus:ring-blue-500/50 ${
+                  isDarkMode 
+                    ? 'bg-gray-800/50 border-gray-600 text-white placeholder-gray-400'
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
+                placeholder={
+                  activeTab === 'pagos' ? 'Buscar pagos...' :
+                  activeTab === 'links' ? 'Buscar links...' :
+                  activeTab === 'devoluciones' ? 'Buscar devoluciones...' :
+                  'Buscar transacciones...'
+                }
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
+          {activeTab === 'pagos' && (
+            <div className="flex items-center space-x-4">
+              <div className={`flex items-center space-x-2 ${
+                isDarkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                <Filter className="h-5 w-5" />
+                <span className="text-sm font-medium">Filtros:</span>
+              </div>
+              <select
+                className={`px-4 py-2 rounded-xl border transition-all duration-300 focus:ring-2 focus:ring-blue-500/50 ${
+                  isDarkMode 
+                    ? 'bg-gray-800/50 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                value={selectedEstado}
+                onChange={(e) => setSelectedEstado(e.target.value)}
+              >
+                <option value="todos">Todos los estados</option>
+                <option value="completado">Completado</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="fallido">Fallido</option>
+                <option value="procesando">Procesando</option>
+              </select>
+              <select
+                className={`px-4 py-2 rounded-xl border transition-all duration-300 focus:ring-2 focus:ring-blue-500/50 ${
+                  isDarkMode 
+                    ? 'bg-gray-800/50 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                value={selectedMetodo}
+                onChange={(e) => setSelectedMetodo(e.target.value)}
+              >
+                <option value="todos">Todos los métodos</option>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+                <option value="link_pago">Link de pago</option>
+                <option value="financiacion">Financiación</option>
+              </select>
+            </div>
+          )}
         </div>
-        {activeTab === 'pagos' && (
-          <div className="flex items-center space-x-3">
-            <Filter className="h-5 w-5 text-gray-400" />
-            <select
-              className="border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={selectedEstado}
-              onChange={(e) => setSelectedEstado(e.target.value)}
-            >
-              <option value="todos">Todos los estados</option>
-              <option value="completado">Completado</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="fallido">Fallido</option>
-              <option value="procesando">Procesando</option>
-            </select>
-            <select
-              className="border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={selectedMetodo}
-              onChange={(e) => setSelectedMetodo(e.target.value)}
-            >
-              <option value="todos">Todos los métodos</option>
-              <option value="tarjeta">Tarjeta</option>
-              <option value="efectivo">Efectivo</option>
-              <option value="transferencia">Transferencia</option>
-              <option value="link_pago">Link de pago</option>
-              <option value="financiacion">Financiación</option>
-            </select>
-          </div>
-        )}
       </div>
 
       {activeTab === 'pagos' && renderPagos()}
       {activeTab === 'links' && renderLinks()}
       {activeTab === 'devoluciones' && renderDevoluciones()}
       {activeTab === 'conciliacion' && renderConciliacion()}
+
+      {/* Register Payment Modal */}
+      <RegisterPaymentModal
+        isOpen={showRegisterPaymentModal}
+        onClose={() => setShowRegisterPaymentModal(false)}
+        onSubmit={handleRegisterPayment}
+      />
     </div>
   );
 };

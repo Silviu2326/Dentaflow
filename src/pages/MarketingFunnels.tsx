@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Search, Edit, Eye, TrendingDown, Users, Calendar, Phone, FileText, CheckCircle, User } from 'lucide-react';
+import NewLeadModal from '../components/NewLeadModal';
 
 interface FunnelLead {
   id: string;
@@ -38,6 +39,7 @@ const MarketingFunnels: React.FC = () => {
   const [selectedFunnel, setSelectedFunnel] = useState('todos');
   const [selectedResponsable, setSelectedResponsable] = useState('todos');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showNewLeadModal, setShowNewLeadModal] = useState(false);
 
   const [leads] = useState<FunnelLead[]>([
     {
@@ -199,6 +201,10 @@ const MarketingFunnels: React.FC = () => {
     return labels[estado] || estado;
   };
 
+  const handleCreateLead = (leadData: any) => {
+    console.log('Creating lead:', leadData);
+  };
+
   return (
     <div className="p-6 bg-gradient-to-br from-orange-50 to-red-100 min-h-screen">
       {/* Header */}
@@ -212,7 +218,10 @@ const MarketingFunnels: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900">Embudos de Conversión</h1>
             <p className="text-gray-600">Lead → 1ª Visita → Presupuesto → Aceptado - Estado y responsables</p>
           </div>
-          <button className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center">
+          <button
+            onClick={() => setShowNewLeadModal(true)}
+            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nuevo Lead
           </button>
@@ -440,6 +449,13 @@ const MarketingFunnels: React.FC = () => {
           </p>
         </div>
       )}
+
+      {/* New Lead Modal */}
+      <NewLeadModal
+        isOpen={showNewLeadModal}
+        onClose={() => setShowNewLeadModal(false)}
+        onSubmit={handleCreateLead}
+      />
     </div>
   );
 };

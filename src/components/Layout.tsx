@@ -1,903 +1,168 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { usePermissions } from '../hooks/usePermissions';
+import { useDarkMode } from '../contexts/DarkModeContext';
 import {
-  LayoutDashboard,
-  Calendar,
-  Users,
-  FileText,
-  CreditCard,
-  FolderOpen,
-  Stethoscope,
   Menu,
-  X,
-  ChevronRight,
   Bell,
   Search,
   Settings,
   LogOut,
-  Package,
-  Activity,
-  Shield,
-  DollarSign,
-  BarChart3,
-  UserCheck,
-  Globe,
-  Upload,
-  Target,
-  Coins,
-  TrendingUp,
-  Mail,
-  Calculator,
-  Zap,
-  MessageSquare,
-  ExternalLink,
-  Images,
-  Phone,
-  PieChart,
-  Key,
-  Server,
-  Palette,
-  Sliders,
-  Eye
+  User,
+  MessageCircle,
+  Filter,
+  Sun,
+  Moon
 } from 'lucide-react';
+import Sidebar from './Sidebar';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const { user, logout } = useAuth();
-  const { hasPermission, isRole, isAnyRole } = usePermissions();
-
-  const getAllNavigation = () => [
-    // Main sections - accessible based on role
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, section: 'main', permission: 'dashboard', readOnly: false },
-    { name: 'Agenda', href: '/agenda', icon: Calendar, section: 'main', permission: 'agenda', readOnly: false },
-    { name: 'Pacientes', href: '/pacientes', icon: Users, section: 'main', permission: 'patients', readOnly: false },
-    { name: 'Citas', href: '/citas', icon: Stethoscope, section: 'main', permission: 'appointments', readOnly: false },
-    { name: 'Tratamientos', href: '/tratamientos', icon: Package, section: 'main', permission: 'treatments', readOnly: false },
-    { name: 'Historia Clínica', href: '/historia-clinica', icon: Activity, section: 'main', permission: 'clinical_history', readOnly: false },
-    { name: 'Consentimientos', href: '/consentimientos', icon: Shield, section: 'main', permission: 'consents', readOnly: false },
-    { name: 'Presupuestos', href: '/presupuestos', icon: FileText, section: 'main', permission: 'budgets', readOnly: false },
-    { name: 'Facturación', href: '/facturacion', icon: CreditCard, section: 'main', permission: 'billing', readOnly: false },
-    { name: 'Caja', href: '/caja', icon: DollarSign, section: 'main', permission: 'cash_management', readOnly: false },
-    { name: 'Reportes', href: '/reportes', icon: BarChart3, section: 'main', permission: 'reports', readOnly: false },
-    { name: 'Usuarios', href: '/usuarios', icon: UserCheck, section: 'main', permission: 'users_management', readOnly: false },
-    { name: 'Cita Online', href: '/cita-online', icon: Globe, section: 'main', permission: 'online_booking', readOnly: false },
-    { name: 'Importador', href: '/importador', icon: Upload, section: 'main', permission: 'data_import', readOnly: false },
-    { name: 'Documentos', href: '/documentos', icon: FolderOpen, section: 'main', permission: 'documents', readOnly: false },
-    
-    // Operations Section
-    { name: 'Inventario', href: '/inventario', icon: Package, section: 'operations', permission: 'inventory', readOnly: false },
-    { name: 'Costes', href: '/costes', icon: Calculator, section: 'operations', permission: 'costs', readOnly: false },
-    { name: 'Pagos', href: '/pagos', icon: CreditCard, section: 'operations', permission: 'payments', readOnly: false },
-    { name: 'Integraciones', href: '/integraciones', icon: Zap, section: 'operations', permission: 'integrations', readOnly: false },
-    
-    // External Section
-    { name: 'Portal Paciente', href: '/portal-paciente', icon: ExternalLink, section: 'external', permission: 'patient_portal', readOnly: false },
-    { name: 'Portal Empleado', href: '/portal-empleado', icon: MessageSquare, section: 'external', permission: 'employee_portal', readOnly: false },
-    
-    // HQ Section
-    { name: 'HQ Overview', href: '/hq/overview', icon: Target, section: 'hq', permission: 'hq_overview', readOnly: false },
-    { name: 'HQ Comisiones', href: '/hq/comisiones', icon: Coins, section: 'hq', permission: 'hq_commissions', readOnly: false },
-    
-    // Marketing Section
-    { name: 'Marketing Funnels', href: '/marketing/funnels', icon: TrendingUp, section: 'marketing', permission: 'marketing_funnels', readOnly: false },
-    { name: 'Marketing Comunicaciones', href: '/marketing/comunicaciones', icon: Mail, section: 'marketing', permission: 'marketing_communications', readOnly: false },
-    
-    // Digital Assets Section  
-    { name: 'DAM (Antes/Después)', href: '/dam', icon: Images, section: 'digital', permission: 'dam', readOnly: false },
-    { name: 'Telefonía', href: '/telefonia', icon: Phone, section: 'digital', permission: 'telephony', readOnly: false },
-    { name: 'Financiación', href: '/financiacion', icon: Calculator, section: 'digital', permission: 'financing', readOnly: false },
-    { name: 'Analytics Cohortes', href: '/analytics/cohortes', icon: PieChart, section: 'digital', permission: 'analytics_cohorts', readOnly: false },
-    { name: 'Analytics Forecast', href: '/analytics/forecast', icon: TrendingUp, section: 'digital', permission: 'analytics_forecast', readOnly: false },
-    
-    // System & API Section
-    { name: 'Webhooks', href: '/webhooks', icon: Key, section: 'system', permission: 'webhooks', readOnly: false },
-    { name: 'API', href: '/api', icon: Zap, section: 'system', permission: 'api_management', readOnly: false },
-    { name: 'Status', href: '/status', icon: Server, section: 'system', permission: 'system_status', readOnly: true },
-    { name: 'Auditoría', href: '/auditoria', icon: Activity, section: 'system', permission: 'audit', readOnly: true },
-    
-    // Settings Section
-    { name: 'Privacidad', href: '/ajustes/privacidad', icon: Shield, section: 'settings', permission: 'privacy_settings', readOnly: false },
-    { name: 'Branding', href: '/branding', icon: Palette, section: 'settings', permission: 'branding', readOnly: false },
-    { name: 'Campos Personalizados', href: '/campos-personalizados', icon: Sliders, section: 'settings', permission: 'custom_fields', readOnly: false },
-  ];
-
-  const getNavigationForRole = () => {
-    const allNavigation = getAllNavigation();
-    
-    // Owner/HQ Admin - access to everything
-    if (user?.role === 'owner') {
-      return allNavigation;
-    }
-    
-    // HQ Analyst - only global reports and analytics
-    if (user?.role === 'hq_analyst') {
-      return allNavigation.filter(item => [
-        'dashboard', 'hq_overview', 'reports', 'analytics_cohorts', 
-        'analytics_forecast', 'costs', 'payments', 'audit'
-      ].includes(item.permission)).map(item => ({
-        ...item,
-        readOnly: true // All read-only for analyst
-      }));
-    }
-    
-    // Admin de Sede
-    if (user?.role === 'admin_sede') {
-      return allNavigation.filter(item => [
-        'dashboard', 'agenda', 'patients', 'appointments', 'clinical_history',
-        'consents', 'documents', 'budgets', 'billing', 'cash_management',
-        'inventory', 'costs', 'payments', 'reports', 'hq_commissions',
-        'telephony', 'dam', 'online_booking', 'users_management'
-      ].includes(item.permission));
-    }
-    
-    // Recepción
-    if (user?.role === 'reception') {
-      return allNavigation.filter(item => [
-        'agenda', 'patients', 'appointments', 'budgets', 'billing',
-        'cash_management', 'documents', 'consents', 'reports'
-      ].includes(item.permission));
-    }
-    
-    // Profesional Clínico
-    if (user?.role === 'clinical_professional') {
-      return allNavigation.filter(item => [
-        'agenda', 'patients', 'clinical_history', 'consents', 'budgets',
-        'documents', 'dam', 'reports'
-      ].includes(item.permission)).map(item => {
-        // Patients is read-only for clinical professionals
-        if (item.permission === 'patients') {
-          return { ...item, readOnly: true };
-        }
-        return item;
-      });
-    }
-    
-    // Asistente/Enfermería
-    if (user?.role === 'assistant_nurse') {
-      return allNavigation.filter(item => [
-        'agenda', 'patients', 'clinical_history', 'appointments', 
-        'documents', 'consents'
-      ].includes(item.permission)).map(item => {
-        // Most things are read-only or limited write
-        if (['agenda', 'patients'].includes(item.permission)) {
-          return { ...item, readOnly: true };
-        }
-        return item;
-      });
-    }
-    
-    // Finanzas/Caja
-    if (user?.role === 'finance') {
-      return allNavigation.filter(item => [
-        'billing', 'payments', 'cash_management', 'reports', 'costs', 'audit'
-      ].includes(item.permission)).map(item => {
-        // Costs and audit are read-only
-        if (['costs', 'audit'].includes(item.permission)) {
-          return { ...item, readOnly: true };
-        }
-        return item;
-      });
-    }
-    
-    // Marketing
-    if (user?.role === 'marketing') {
-      return allNavigation.filter(item => [
-        'marketing_funnels', 'marketing_communications', 'dam', 'online_booking', 'reports'
-      ].includes(item.permission)).map(item => {
-        // DAM is read-only, reports is read-only
-        if (['dam', 'reports'].includes(item.permission)) {
-          return { ...item, readOnly: true };
-        }
-        return item;
-      });
-    }
-    
-    // Operaciones/Inventario
-    if (user?.role === 'operations') {
-      return allNavigation.filter(item => [
-        'inventory', 'costs', 'reports'
-      ].includes(item.permission)).map(item => {
-        // Reports is read-only
-        if (item.permission === 'reports') {
-          return { ...item, readOnly: true };
-        }
-        return item;
-      });
-    }
-    
-    // Auditor Externo (Read-only)
-    if (user?.role === 'external_auditor') {
-      return allNavigation.filter(item => [
-        'reports', 'billing', 'cash_management', 'audit'
-      ].includes(item.permission)).map(item => ({
-        ...item,
-        readOnly: true // Everything is read-only for external auditor
-      }));
-    }
-    
-    // Default: empty navigation
-    return [];
-  };
-
-  const navigation = getNavigationForRole();
-
-  const isActive = (href: string) => {
-    return location.pathname === href || location.pathname.startsWith(href + '/');
-  };
-
-  const getSectionColor = (section: string) => {
-    switch (section) {
-      case 'hq': return 'text-purple-600 bg-purple-100 hover:bg-purple-200';
-      case 'marketing': return 'text-orange-600 bg-orange-100 hover:bg-orange-200';
-      case 'operations': return 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200';
-      case 'external': return 'text-indigo-600 bg-indigo-100 hover:bg-indigo-200';
-      case 'digital': return 'text-cyan-600 bg-cyan-100 hover:bg-cyan-200';
-      case 'system': return 'text-red-600 bg-red-100 hover:bg-red-200';
-      case 'settings': return 'text-gray-600 bg-gray-100 hover:bg-gray-200';
-      default: return 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
-    }
-  };
-
-  const getSectionActiveColor = (section: string) => {
-    switch (section) {
-      case 'hq': return 'bg-purple-100 text-purple-900 border-purple-500';
-      case 'marketing': return 'bg-orange-100 text-orange-900 border-orange-500';
-      case 'operations': return 'bg-emerald-100 text-emerald-900 border-emerald-500';
-      case 'external': return 'bg-indigo-100 text-indigo-900 border-indigo-500';
-      case 'digital': return 'bg-cyan-100 text-cyan-900 border-cyan-500';
-      case 'system': return 'bg-red-100 text-red-900 border-red-500';
-      case 'settings': return 'bg-gray-100 text-gray-900 border-gray-500';
-      default: return 'bg-blue-100 text-blue-900 border-blue-500';
-    }
-  };
-
-  const groupedNavigation = navigation.reduce((acc: any, item) => {
-    if (!acc[item.section]) {
-      acc[item.section] = [];
-    }
-    acc[item.section].push(item);
-    return acc;
-  }, {});
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar */}
-      <div className={`fixed inset-0 z-40 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white">
-          <div className="absolute top-0 right-0 -mr-12 pt-2">
-            <button
-              type="button"
-              className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="h-6 w-6 text-white" />
-            </button>
-          </div>
-          <div className="h-0 flex-1 overflow-y-auto pt-5 pb-4">
-            <div className="flex flex-shrink-0 items-center px-4">
-              <Stethoscope className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">ClinicApp</span>
-            </div>
-            <nav className="mt-5 space-y-1 px-2">
-              {/* Main Section */}
-              {groupedNavigation.main?.map((item: any) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`group flex items-center rounded-md px-2 py-2 text-base font-medium transition-colors ${
-                    isActive(item.href)
-                      ? getSectionActiveColor(item.section)
-                      : getSectionColor(item.section)
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon className="mr-4 h-6 w-6" />
-                  <span className="flex-1">{item.name}</span>
-                  {item.readOnly && (
-                    <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
-                  )}
-                </Link>
-              ))}
-
-              {/* Operations Section */}
-              {groupedNavigation.operations && (
-                <>
-                  <div className="pt-4 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
-                        Operaciones
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.operations.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-base font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <item.icon className="mr-4 h-6 w-6" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* External Section */}
-              {groupedNavigation.external && (
-                <>
-                  <div className="pt-4 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-indigo-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-indigo-800 uppercase tracking-wider">
-                        Portales
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.external.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-base font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <item.icon className="mr-4 h-6 w-6" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* HQ Section */}
-              {groupedNavigation.hq && (
-                <>
-                  <div className="pt-4 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-purple-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-purple-800 uppercase tracking-wider">
-                        Headquarters
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.hq.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-base font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <item.icon className="mr-4 h-6 w-6" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* Marketing Section */}
-              {groupedNavigation.marketing && (
-                <>
-                  <div className="pt-4 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-orange-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-orange-800 uppercase tracking-wider">
-                        Marketing
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.marketing.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-base font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <item.icon className="mr-4 h-6 w-6" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* Digital Section */}
-              {groupedNavigation.digital && (
-                <>
-                  <div className="pt-4 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-cyan-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-cyan-800 uppercase tracking-wider">
-                        Digital & Analytics
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.digital.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-base font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <item.icon className="mr-4 h-6 w-6" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* System Section */}
-              {groupedNavigation.system && (
-                <>
-                  <div className="pt-4 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-red-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-red-800 uppercase tracking-wider">
-                        Sistema & API
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.system.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-base font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <item.icon className="mr-4 h-6 w-6" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* Settings Section */}
-              {groupedNavigation.settings && (
-                <>
-                  <div className="pt-4 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-gray-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-gray-800 uppercase tracking-wider">
-                        Configuración
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.settings.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-base font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <item.icon className="mr-4 h-6 w-6" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400" title="Solo lectura" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-            </nav>
-          </div>
-          
-          {/* Role info footer - Mobile */}
-          {user && (
-            <div className="flex-shrink-0 p-4 border-t border-gray-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-xs font-medium text-white">
-                      {user.name?.charAt(0) || 'U'}
-                    </span>
-                  </div>
-                </div>
-                <div className="ml-3 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {navigation.length} páginas disponibles
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex min-h-0 flex-1 flex-col bg-white shadow">
-          <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
-            <div className="flex flex-shrink-0 items-center px-4">
-              <Stethoscope className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">ClinicApp</span>
-            </div>
-            <nav className="mt-8 flex-1 space-y-1 bg-white px-2">
-              {/* Main Section */}
-              {groupedNavigation.main?.map((item: any) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? getSectionActiveColor(item.section)
-                      : getSectionColor(item.section)
-                  }`}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  <span className="flex-1">{item.name}</span>
-                  {item.readOnly && (
-                    <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
-                  )}
-                  {isActive(item.href) && (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                </Link>
-              ))}
-
-              {/* Operations Section */}
-              {groupedNavigation.operations && (
-                <>
-                  <div className="pt-6 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-emerald-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
-                        Operaciones
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.operations.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                    >
-                      <item.icon className="mr-3 h-5 w-5" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
-                      )}
-                      {isActive(item.href) && (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* External Section */}
-              {groupedNavigation.external && (
-                <>
-                  <div className="pt-6 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-indigo-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-indigo-800 uppercase tracking-wider">
-                        Portales
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.external.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                    >
-                      <item.icon className="mr-3 h-5 w-5" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
-                      )}
-                      {isActive(item.href) && (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* HQ Section */}
-              {groupedNavigation.hq && (
-                <>
-                  <div className="pt-6 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-purple-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-purple-800 uppercase tracking-wider">
-                        Headquarters
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.hq.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                    >
-                      <item.icon className="mr-3 h-5 w-5" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
-                      )}
-                      {isActive(item.href) && (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* Marketing Section */}
-              {groupedNavigation.marketing && (
-                <>
-                  <div className="pt-6 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-orange-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-orange-800 uppercase tracking-wider">
-                        Marketing
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.marketing.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                    >
-                      <item.icon className="mr-3 h-5 w-5" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
-                      )}
-                      {isActive(item.href) && (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* Digital Section */}
-              {groupedNavigation.digital && (
-                <>
-                  <div className="pt-6 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-cyan-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-cyan-800 uppercase tracking-wider">
-                        Digital & Analytics
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.digital.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                    >
-                      <item.icon className="mr-3 h-5 w-5" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
-                      )}
-                      {isActive(item.href) && (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* System Section */}
-              {groupedNavigation.system && (
-                <>
-                  <div className="pt-6 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-red-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-red-800 uppercase tracking-wider">
-                        Sistema & API
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.system.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                    >
-                      <item.icon className="mr-3 h-5 w-5" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
-                      )}
-                      {isActive(item.href) && (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {/* Settings Section */}
-              {groupedNavigation.settings && (
-                <>
-                  <div className="pt-6 pb-2">
-                    <div className="flex items-center px-2">
-                      <div className="w-2 h-2 bg-gray-600 rounded-full mr-2"></div>
-                      <span className="text-xs font-semibold text-gray-800 uppercase tracking-wider">
-                        Configuración
-                      </span>
-                    </div>
-                  </div>
-                  {groupedNavigation.settings.map((item: any) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors ${
-                        isActive(item.href)
-                          ? getSectionActiveColor(item.section)
-                          : getSectionColor(item.section)
-                      }`}
-                    >
-                      <item.icon className="mr-3 h-5 w-5" />
-                      <span className="flex-1">{item.name}</span>
-                      {item.readOnly && (
-                        <Eye className="h-4 w-4 text-gray-400 mr-1" title="Solo lectura" />
-                      )}
-                      {isActive(item.href) && (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Link>
-                  ))}
-                </>
-              )}
-            </nav>
-          </div>
-          
-          {/* Role info footer - Desktop */}
-          {user && (
-            <div className="flex-shrink-0 p-4 border-t border-gray-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-xs font-medium text-white">
-                      {user.name?.charAt(0) || 'U'}
-                    </span>
-                  </div>
-                </div>
-                <div className="ml-3 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {navigation.length} páginas • {user.roleDisplayName}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode 
+        ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' 
+        : 'bg-gradient-to-br from-gray-50 via-blue-50/30 to-slate-100'
+    }`}>
+      {/* Sidebar components */}
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} isMobile={true} isDarkMode={isDarkMode} />
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} isMobile={false} isDarkMode={isDarkMode} />
 
       {/* Main content */}
-      <div className="lg:pl-64 flex flex-col flex-1">
-        {/* Top bar */}
-        <div className="sticky top-0 z-10 bg-white shadow-sm border-b border-gray-200">
+      <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">
+        {/* Modern Top bar */}
+        <header className={`sticky top-0 z-30 backdrop-blur-xl border-b shadow-sm transition-colors duration-300 ${
+          isDarkMode 
+            ? 'bg-gray-800/80 border-gray-700/20' 
+            : 'bg-white/80 border-white/20'
+        }`}>
           <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-            <button
-              type="button"
-              className="lg:hidden -ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-
-            <div className="flex-1 flex justify-center lg:justify-start">
-              <div className="w-full max-w-lg lg:max-w-xs">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400 ml-3" />
-                  <input
-                    className="block h-full w-full border-0 py-0 pl-10 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm bg-gray-50 rounded-md"
-                    placeholder="Buscar pacientes, citas..."
-                    type="search"
-                  />
+            <div className="flex items-center space-x-4">
+              <button
+                type="button"
+                className={`lg:hidden p-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 ${
+                  isDarkMode 
+                    ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
+                }`}
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+              
+              <div className="hidden lg:block">
+                <div className={`text-sm ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
+                  Bienvenido de nuevo, <span className={`font-semibold ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>{user?.name || 'Usuario'}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <button className="text-gray-400 hover:text-gray-500">
-                <Bell className="h-6 w-6" />
+            {/* Enhanced Search */}
+            <div className="flex-1 max-w-2xl mx-4 lg:mx-8">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  className={`block w-full pl-10 pr-12 py-2.5 border rounded-xl backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 ${
+                    isDarkMode 
+                      ? 'border-gray-600/50 bg-gray-700/50 text-white placeholder:text-gray-400 focus:border-blue-400 hover:bg-gray-700/70' 
+                      : 'border-gray-200/50 bg-white/50 text-gray-900 placeholder:text-gray-400 focus:border-blue-300 hover:bg-white/70'
+                  }`}
+                  placeholder="Buscar pacientes, citas, tratamientos..."
+                  type="search"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button className={`p-1 rounded-lg transition-all duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-600/50' 
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/50'
+                  }`}>
+                    <Filter className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side controls */}
+            <div className="flex items-center space-x-3">
+              {/* Theme toggle */}
+              <button 
+                onClick={toggleDarkMode}
+                className={`p-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 ${
+                  isDarkMode 
+                    ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
+                }`}
+                title={isDarkMode ? 'Modo claro' : 'Modo oscuro'}
+              >
+                {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </button>
-              <button className="text-gray-400 hover:text-gray-500">
-                <Settings className="h-6 w-6" />
+              
+              {/* Notifications */}
+              <div className="relative">
+                <button className={`p-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 ${
+                  isDarkMode 
+                    ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
+                }`}>
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                    3
+                  </span>
+                </button>
+              </div>
+              
+              {/* Messages */}
+              <button className={`p-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
+              }`}>
+                <MessageCircle className="h-5 w-5" />
               </button>
-              <div className="flex items-center space-x-3">
+              
+              {/* Settings */}
+              <button className={`p-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
+              }`}>
+                <Settings className="h-5 w-5" />
+              </button>
+
+              {/* User profile */}
+              <div className={`flex items-center space-x-3 ml-4 pl-4 border-l ${
+                isDarkMode ? 'border-gray-600/50' : 'border-gray-200/50'
+              }`}>
                 <div className="flex-shrink-0">
-                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
+                    <span className="text-sm font-bold text-white">
                       {user?.name?.charAt(0) || 'U'}
                     </span>
                   </div>
                 </div>
                 <div className="hidden md:block">
-                  <div className="text-sm font-medium text-gray-900">{user?.name || 'Usuario'}</div>
-                  <div className="text-xs text-gray-500">{user?.roleDisplayName || user?.role || 'Usuario'}</div>
+                  <div className={`text-sm font-semibold ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>{user?.name || 'Usuario'}</div>
+                  <div className={`text-xs ${
+                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>{user?.roleDisplayName || user?.role || 'Usuario'}</div>
                 </div>
                 <button
                   onClick={logout}
-                  className="text-gray-400 hover:text-gray-500 p-1 rounded-md hover:bg-gray-100 transition-colors"
+                  className={`p-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:text-red-400 hover:bg-red-900/30' 
+                      : 'text-gray-600 hover:text-red-600 hover:bg-red-50/50'
+                  }`}
                   title="Cerrar sesión"
                 >
                   <LogOut className="h-5 w-5" />
@@ -905,11 +170,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Page content */}
-        <main className="flex-1 pb-8">
-          {children}
+        {/* Modern Page content */}
+        <main className="flex-1 relative">
+          <div className={`absolute inset-0 pointer-events-none transition-colors duration-300 ${
+            isDarkMode 
+              ? 'bg-gradient-to-br from-gray-800/50 via-slate-800/20 to-gray-900/30' 
+              : 'bg-gradient-to-br from-white/50 via-blue-50/20 to-purple-50/30'
+          }`}></div>
+          <div className="relative z-10 p-6 lg:p-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>

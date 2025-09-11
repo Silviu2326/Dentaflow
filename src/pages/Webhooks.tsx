@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Webhook, Key, Activity, AlertCircle, CheckCircle, Clock, Eye, EyeOff, Copy, Trash2, Plus, RefreshCw } from 'lucide-react';
+import NewWebhookModal from '../components/NewWebhookModal';
 
 interface WebhookConfig {
   id: string;
@@ -40,6 +41,7 @@ interface ApiKey {
 export default function Webhooks() {
   const [activeTab, setActiveTab] = useState<'webhooks' | 'logs' | 'keys' | 'playground'>('webhooks');
   const [mostrarSecreto, setMostrarSecreto] = useState<string>('');
+  const [showNewWebhookModal, setShowNewWebhookModal] = useState(false);
 
   const webhooks: WebhookConfig[] = [
     {
@@ -199,6 +201,10 @@ export default function Webhooks() {
     navigator.clipboard.writeText(texto);
   };
 
+  const handleCreateWebhook = (webhookData: any) => {
+    console.log('Creating webhook:', webhookData);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -207,7 +213,10 @@ export default function Webhooks() {
           <p className="text-gray-600">Gestión de webhooks, claves API, logs y playground para testing</p>
         </div>
         <div className="flex space-x-2">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2">
+          <button
+            onClick={() => setShowNewWebhookModal(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+          >
             <Plus className="h-4 w-4" />
             <span>Nuevo Webhook</span>
           </button>
@@ -598,6 +607,13 @@ export default function Webhooks() {
           </div>
         </div>
       )}
+
+      {/* New Webhook Modal */}
+      <NewWebhookModal
+        isOpen={showNewWebhookModal}
+        onClose={() => setShowNewWebhookModal(false)}
+        onSubmit={handleCreateWebhook}
+      />
     </div>
   );
 }

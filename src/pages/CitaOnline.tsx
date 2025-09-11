@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Eye, Edit, Globe, Clock, MapPin, Shield, Palette, Code } from 'lucide-react';
+import { Save, Eye, Edit, Globe, Clock, MapPin, Shield, Palette, Code, Settings, Calendar, Users, CheckCircle, XCircle, Plus, Trash2, Type, FileText, DollarSign, Zap } from 'lucide-react';
 
 interface SedeConfig {
   id: string;
@@ -271,79 +271,133 @@ const CitaOnline: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Cita Online</h1>
-            <p className="text-gray-600">Reglas públicas, duración, disponibilidad, texto legal y landing por sede</p>
+      <div className="mb-8">
+        <div className="text-center space-y-3 mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Cita Online
+          </h1>
+          <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+            Configura las reglas de disponibilidad, personaliza la landing page y administra el sistema de citas online por sede
+          </p>
+        </div>
+
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-6 mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="bg-white p-3 rounded-xl shadow-lg border border-gray-100">
+              <Globe className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Panel de Configuración</h2>
+              <p className="text-gray-600">Gestiona cada sede de forma independiente</p>
+            </div>
           </div>
           <button
             onClick={handleSaveConfig}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 flex items-center shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="h-5 w-5 mr-2" />
             Guardar Cambios
           </button>
         </div>
 
         {/* Sede selector */}
-        <div className="flex items-center space-x-4 mb-4">
-          <label className="text-sm font-medium text-gray-700">Sede:</label>
-          <select
-            value={selectedSede}
-            onChange={(e) => setSelectedSede(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-          >
-            {sedes.map(sede => (
-              <option key={sede.id} value={sede.id}>
-                {sede.nombre} {!sede.activa && '(Inactiva)'}
-              </option>
-            ))}
-          </select>
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-r from-blue-100 to-purple-100 p-3 rounded-xl">
+                <MapPin className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Seleccionar Sede</label>
+                <p className="text-xs text-gray-500">Configura cada ubicación por separado</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <select
+                value={selectedSede}
+                onChange={(e) => setSelectedSede(e.target.value)}
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 min-w-[200px]"
+              >
+                {sedes.map(sede => (
+                  <option key={sede.id} value={sede.id}>
+                    {sede.nombre} {!sede.activa && '(Inactiva)'}
+                  </option>
+                ))}
+              </select>
+              {sedeActual && (
+                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  sedeActual.activa 
+                    ? 'bg-green-100 text-green-800 border border-green-200' 
+                    : 'bg-red-100 text-red-800 border border-red-200'
+                }`}>
+                  {sedeActual.activa ? (
+                    <div className="flex items-center">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Activa
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Inactiva
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-6">
+          <nav className="flex border-b border-gray-200">
             <button
               onClick={() => setActiveTab('configuracion')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex-1 py-6 px-6 font-semibold text-sm transition-all duration-200 ${
                 activeTab === 'configuracion'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
-              <div className="flex items-center">
-                <Clock className="h-4 w-4 mr-2" />
-                Configuración
+              <div className="flex items-center justify-center">
+                <Settings className="h-5 w-5 mr-3" />
+                <div className="text-left">
+                  <div>Configuración</div>
+                  <div className="text-xs opacity-75">Horarios y reglas</div>
+                </div>
               </div>
             </button>
             <button
               onClick={() => setActiveTab('landing')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex-1 py-6 px-6 font-semibold text-sm transition-all duration-200 ${
                 activeTab === 'landing'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
-              <div className="flex items-center">
-                <Palette className="h-4 w-4 mr-2" />
-                Landing Page
+              <div className="flex items-center justify-center">
+                <Palette className="h-5 w-5 mr-3" />
+                <div className="text-left">
+                  <div>Landing Page</div>
+                  <div className="text-xs opacity-75">Diseño y contenido</div>
+                </div>
               </div>
             </button>
             <button
               onClick={() => setActiveTab('preview')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex-1 py-6 px-6 font-semibold text-sm transition-all duration-200 ${
                 activeTab === 'preview'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
-              <div className="flex items-center">
-                <Eye className="h-4 w-4 mr-2" />
-                Vista Previa
+              <div className="flex items-center justify-center">
+                <Eye className="h-5 w-5 mr-3" />
+                <div className="text-left">
+                  <div>Vista Previa</div>
+                  <div className="text-xs opacity-75">Resultado final</div>
+                </div>
               </div>
             </button>
           </nav>
@@ -352,90 +406,120 @@ const CitaOnline: React.FC = () => {
 
       {/* Content based on active tab */}
       {activeTab === 'configuracion' && sedeActual && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Reglas de Disponibilidad */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Reglas de Disponibilidad</h3>
-            
-            <div className="space-y-4">
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-blue-100 to-purple-100 p-3 rounded-xl mr-4">
+                <Clock className="h-6 w-6 text-blue-600" />
+              </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <h3 className="text-xl font-bold text-gray-900">Reglas de Disponibilidad</h3>
+                <p className="text-gray-600 text-sm">Configura los tiempos y restricciones</p>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-200">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <Clock className="h-4 w-4 inline mr-2" />
                   Duración por defecto (minutos)
                 </label>
                 <input
                   type="number"
                   value={sedeActual.configuracion.duracionDefecto}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                  placeholder="30"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <Calendar className="h-4 w-4 inline mr-2" />
                   Anticipación mínima (horas)
                 </label>
                 <input
                   type="number"
                   value={sedeActual.configuracion.anticipacionMinima}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                  placeholder="2"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <Calendar className="h-4 w-4 inline mr-2" />
                   Anticipación máxima (días)
                 </label>
                 <input
                   type="number"
                   value={sedeActual.configuracion.anticipacionMaxima}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                  placeholder="30"
                 />
               </div>
 
-              <div>
-                <label className="flex items-center">
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-xl border border-yellow-200">
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="checkbox"
                     checked={sedeActual.configuracion.requiereCaptcha}
-                    className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="mr-3 h-5 w-5 rounded border-2 border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700">Requerir CAPTCHA</span>
+                  <div className="flex items-center">
+                    <Shield className="h-4 w-4 mr-2 text-yellow-600" />
+                    <span className="text-sm font-medium text-gray-700">Requerir verificación CAPTCHA</span>
+                  </div>
                 </label>
+                <p className="text-xs text-gray-500 mt-2 ml-8">Añade una capa extra de seguridad al formulario</p>
               </div>
             </div>
           </div>
 
           {/* Horarios Disponibles */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Horarios Disponibles</h3>
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-green-100 to-teal-100 p-3 rounded-xl mr-4">
+                <Clock className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Horarios Disponibles</h3>
+                <p className="text-gray-600 text-sm">Configura los días y horas de atención</p>
+              </div>
+            </div>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
               {diasSemana.map(dia => {
                 const horario = sedeActual.configuracion.horariosDisponibles[dia];
                 return (
-                  <div key={dia} className="flex items-center space-x-3">
-                    <div className="w-20">
-                      <label className="flex items-center">
+                  <div key={dia} className="bg-gradient-to-r from-gray-50 to-blue-50 p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0 w-24">
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={horario?.activo}
+                            className="mr-3 h-5 w-5 rounded border-2 border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-sm font-semibold text-gray-700 capitalize">{dia}</span>
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-3 flex-1">
                         <input
-                          type="checkbox"
-                          checked={horario?.activo}
-                          className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          type="time"
+                          value={horario?.inicio || '09:00'}
+                          disabled={!horario?.activo}
+                          className="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 shadow-sm hover:shadow-md transition-shadow duration-200"
                         />
-                        <span className="text-sm text-gray-700 capitalize">{dia}</span>
-                      </label>
+                        <span className="text-gray-400 font-medium">-</span>
+                        <input
+                          type="time"
+                          value={horario?.fin || '18:00'}
+                          disabled={!horario?.activo}
+                          className="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 shadow-sm hover:shadow-md transition-shadow duration-200"
+                        />
+                      </div>
                     </div>
-                    <input
-                      type="time"
-                      value={horario?.inicio || '09:00'}
-                      disabled={!horario?.activo}
-                      className="px-2 py-1 border border-gray-300 rounded text-sm disabled:bg-gray-100"
-                    />
-                    <span className="text-gray-500">-</span>
-                    <input
-                      type="time"
-                      value={horario?.fin || '18:00'}
-                      disabled={!horario?.activo}
-                      className="px-2 py-1 border border-gray-300 rounded text-sm disabled:bg-gray-100"
-                    />
                   </div>
                 );
               })}
@@ -443,19 +527,33 @@ const CitaOnline: React.FC = () => {
           </div>
 
           {/* Profesionales y Tratamientos */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Profesionales y Tratamientos</h3>
-            
-            <div className="space-y-4">
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-3 rounded-xl mr-4">
+                <Users className="h-6 w-6 text-purple-600" />
+              </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <h3 className="text-xl font-bold text-gray-900">Profesionales y Tratamientos</h3>
+                <p className="text-gray-600 text-sm">Configura quién puede atender y qué servicios</p>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200">
+                <label className="block text-sm font-bold text-gray-700 mb-4">
+                  <Users className="h-4 w-4 inline mr-2" />
                   Profesionales Disponibles
                 </label>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {sedeActual.configuracion.profesionalesDisponibles.map((prof, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm">{prof}</span>
-                      <button className="text-red-600 hover:text-red-900">
+                    <div key={index} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-xs mr-3">
+                          {prof.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        </div>
+                        <span className="text-sm font-medium text-gray-800">{prof}</span>
+                      </div>
+                      <button className="text-purple-600 hover:text-purple-800 hover:bg-purple-50 p-2 rounded-lg transition-colors duration-200">
                         <Edit className="h-4 w-4" />
                       </button>
                     </div>
@@ -463,15 +561,21 @@ const CitaOnline: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="bg-gradient-to-r from-teal-50 to-cyan-50 p-6 rounded-xl border border-teal-200">
+                <label className="block text-sm font-bold text-gray-700 mb-4">
+                  <Settings className="h-4 w-4 inline mr-2" />
                   Tratamientos Permitidos
                 </label>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {sedeActual.configuracion.tratamientosPermitidos.map((trat, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm">{trat}</span>
-                      <button className="text-red-600 hover:text-red-900">
+                    <div key={index} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-gradient-to-r from-teal-400 to-cyan-500 rounded-full flex items-center justify-center text-white text-xs mr-3">
+                          <Zap className="h-4 w-4" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-800">{trat}</span>
+                      </div>
+                      <button className="text-teal-600 hover:text-teal-800 hover:bg-teal-50 p-2 rounded-lg transition-colors duration-200">
                         <Edit className="h-4 w-4" />
                       </button>
                     </div>
@@ -482,119 +586,166 @@ const CitaOnline: React.FC = () => {
           </div>
 
           {/* Texto Legal */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Texto Legal</h3>
-            <textarea
-              value={sedeActual.configuracion.textoLegal}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Texto legal que aparecerá en el formulario..."
-            />
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-amber-100 to-yellow-100 p-3 rounded-xl mr-4">
+                <FileText className="h-6 w-6 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Texto Legal</h3>
+                <p className="text-gray-600 text-sm">Avisos legales y políticas que aparecerán en el formulario</p>
+              </div>
+            </div>
+            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 rounded-xl border border-amber-200">
+              <textarea
+                value={sedeActual.configuracion.textoLegal}
+                rows={6}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 resize-none"
+                placeholder="Texto legal que aparecerá en el formulario de citas. Incluye políticas de privacidad, términos y condiciones, etc..."
+              />
+              <p className="text-xs text-gray-500 mt-2">Este texto será mostrado al usuario antes de confirmar su cita</p>
+            </div>
           </div>
         </div>
       )}
 
       {activeTab === 'landing' && sedeActual && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Contenido */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Contenido de la Landing</h3>
-            
-            <div className="space-y-4">
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-blue-100 to-indigo-100 p-3 rounded-xl mr-4">
+                <Globe className="h-6 w-6 text-blue-600" />
+              </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <h3 className="text-xl font-bold text-gray-900">Contenido de la Landing</h3>
+                <p className="text-gray-600 text-sm">Configura el contenido principal de tu página</p>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                <label className="block text-sm font-bold text-gray-700 mb-3">
+                  <Type className="h-4 w-4 inline mr-2" />
                   Título Principal
                 </label>
                 <input
                   type="text"
                   value={sedeActual.configuracion.landing.titulo}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                  placeholder="Título que aparecerá en la landing..."
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                <label className="block text-sm font-bold text-gray-700 mb-3">
+                  <Type className="h-4 w-4 inline mr-2" />
                   Subtítulo
                 </label>
                 <input
                   type="text"
                   value={sedeActual.configuracion.landing.subtitulo}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                  placeholder="Subtítulo descriptivo..."
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-xl border border-green-200">
+                <label className="block text-sm font-bold text-gray-700 mb-3">
+                  <FileText className="h-4 w-4 inline mr-2" />
                   Descripción
                 </label>
                 <textarea
                   value={sedeActual.configuracion.landing.descripcion}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  rows={4}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 resize-none"
+                  placeholder="Descripción detallada de tus servicios..."
                 />
               </div>
             </div>
           </div>
 
           {/* Diseño */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Diseño y Colores</h3>
-            
-            <div className="space-y-4">
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-pink-100 to-rose-100 p-3 rounded-xl mr-4">
+                <Palette className="h-6 w-6 text-pink-600" />
+              </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <h3 className="text-xl font-bold text-gray-900">Diseño y Colores</h3>
+                <p className="text-gray-600 text-sm">Personaliza la apariencia de tu landing</p>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
+                <label className="block text-sm font-bold text-gray-700 mb-3">
+                  <Palette className="h-4 w-4 inline mr-2" />
                   Color Primario
                 </label>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <input
                     type="color"
                     value={sedeActual.configuracion.landing.colorPrimario}
-                    className="w-12 h-10 rounded border border-gray-300"
+                    className="w-14 h-12 rounded-xl border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
                   />
                   <input
                     type="text"
                     value={sedeActual.configuracion.landing.colorPrimario}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-200">
+                <label className="block text-sm font-bold text-gray-700 mb-3">
+                  <Palette className="h-4 w-4 inline mr-2" />
                   Color Secundario
                 </label>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <input
                     type="color"
                     value={sedeActual.configuracion.landing.colorSecundario}
-                    className="w-12 h-10 rounded border border-gray-300"
+                    className="w-14 h-12 rounded-xl border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
                   />
                   <input
                     type="text"
                     value={sedeActual.configuracion.landing.colorSecundario}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={sedeActual.configuracion.landing.mostrarPrecios}
-                    className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">Mostrar precios</span>
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
+                <label className="block text-sm font-bold text-gray-700 mb-4">
+                  <Settings className="h-4 w-4 inline mr-2" />
+                  Opciones de Visualización
                 </label>
+                <div className="space-y-3">
+                  <label className="flex items-center cursor-pointer bg-white p-3 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                    <input
+                      type="checkbox"
+                      checked={sedeActual.configuracion.landing.mostrarPrecios}
+                      className="mr-3 h-5 w-5 rounded border-2 border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex items-center">
+                      <DollarSign className="h-4 w-4 mr-2 text-green-600" />
+                      <span className="text-sm font-medium text-gray-700">Mostrar precios</span>
+                    </div>
+                  </label>
 
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={sedeActual.configuracion.landing.mostrarProfesionales}
-                    className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">Mostrar selector de profesionales</span>
-                </label>
+                  <label className="flex items-center cursor-pointer bg-white p-3 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                    <input
+                      type="checkbox"
+                      checked={sedeActual.configuracion.landing.mostrarProfesionales}
+                      className="mr-3 h-5 w-5 rounded border-2 border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 mr-2 text-purple-600" />
+                      <span className="text-sm font-medium text-gray-700">Mostrar selector de profesionales</span>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
           </div>

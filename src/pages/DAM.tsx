@@ -23,8 +23,10 @@ import {
   Copy,
   Share2,
   GitCompare,
-  Award
+  Award,
+  Clock
 } from 'lucide-react';
+import UploadImageModal from '../components/UploadImageModal';
 
 interface ImagenClinica {
   id: string;
@@ -88,6 +90,7 @@ const DAM: React.FC = () => {
   const [selectedTipo, setSelectedTipo] = useState('todos');
   const [vistaGaleria, setVistaGaleria] = useState<'grid' | 'list'>('grid');
   const [mostrarSoloPublicas, setMostrarSoloPublicas] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const [imagenes] = useState<ImagenClinica[]>([
     {
@@ -347,6 +350,10 @@ const DAM: React.FC = () => {
     return matchesSearch && matchesCategoria && matchesTipo && matchesPublicas;
   });
 
+  const handleUploadImage = (imageData: any) => {
+    console.log('Uploading images:', imageData);
+  };
+
   const renderBiblioteca = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -362,7 +369,10 @@ const DAM: React.FC = () => {
             <Download className="h-4 w-4 mr-2" />
             Exportar
           </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
+          <button 
+            onClick={() => setShowUploadModal(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+          >
             <Upload className="h-4 w-4 mr-2" />
             Subir Imágenes
           </button>
@@ -1047,6 +1057,13 @@ const DAM: React.FC = () => {
       {activeTab === 'comparador' && renderComparador()}
       {activeTab === 'permisos' && renderPermisos()}
       {activeTab === 'categorias' && renderCategorias()}
+
+      {/* Upload Image Modal */}
+      <UploadImageModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onSubmit={handleUploadImage}
+      />
     </div>
   );
 };
